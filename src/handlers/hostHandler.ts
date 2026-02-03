@@ -133,6 +133,7 @@ export async function handleCheckHost(c: Context<{ Bindings: Bindings }>) {
             ssl_ssl_com: sslSslCom,
             ssl_lets_encrypt: sslLetsEncrypt,
             zone_hold: zoneHoldRes.zone_hold,
+            zone_hold_details: zoneHoldRes.details,
             updated_at: Date.now()
         });
 
