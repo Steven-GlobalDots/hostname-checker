@@ -163,8 +163,38 @@ export async function handleCheckHost(c: Context<{ Bindings: Bindings }>) {
         const sslSslCom = checkCaaPermission(parsedCaas, 'ssl.com');
         const sslLetsEncrypt = checkCaaPermission(parsedCaas, 'letsencrypt.org');
 
-        // 4. Zone Hold
-        const zoneHoldRes = await checkZoneHold(hostname, c.env.CLOUDFLARE_API_TOKEN, c.env.CLOUDFLARE_ZONE_ID);
+        // 4. Zone Hold - Hybrid Approach
+        let zoneHoldRes;
+
+        // Check if domain uses Cloudflare nameservers (external domain inference)
+        const { isCloudflareManaged } = await import('../services/cloudflare');
+        const isCfManaged = isCloudflareManaged(authNs);
+
+        if (isCfManaged) {
+            // Domain uses CF nameservers - likely managed by Cloudflare
+            // Try API check, but if it succeeds, it means no hold on THIS account
+            // So we infer "likely" zone hold (could be on another account)
+            const apiCheck = await checkZoneHold(hostname, c.env.CLOUDFLARE_API_TOKEN, c.env.CLOUDFLARE_ZONE_ID);
+
+            if (apiCheck.zone_hold === 'yes') {
+                // API confirmed zone hold on this account
+                zoneHoldRes = { ...apiCheck, verification_method: 'api' as const };
+            } else {
+                // API didn't find hold, but CF nameservers suggest it's on Cloudflare
+                // Likely on a different account
+                zoneHoldRes = {
+                    zone_hold: 'likely' as const,
+                    details: 'Domain uses Cloudflare nameservers - likely managed by another CF account',
+                    verification_method: 'nameserver_inference' as const
+                };
+            }
+        } else {
+            // Not using CF nameservers - do standard API check
+            zoneHoldRes = await checkZoneHold(hostname, c.env.CLOUDFLARE_API_TOKEN, c.env.CLOUDFLARE_ZONE_ID);
+            if (!zoneHoldRes.verification_method) {
+                zoneHoldRes.verification_method = 'api';
+            }
+        }
 
         // 5. Store in D1
         await c.env.hosts_db.prepare(`

@@ -36,9 +36,29 @@ export function isCloudflareIp(ip: string): boolean {
     return CLOUDFLARE_IPV4.some(cidr => ipInCidr(ip, cidr));
 }
 
+// Cloudflare nameserver patterns
+const CLOUDFLARE_NS_PATTERNS = [
+    '.ns.cloudflare.com',
+    'cloudflare.com'
+];
+
+/**
+ * Check if nameservers indicate Cloudflare management
+ * This is used for external domains to infer potential zone hold
+ */
+export function isCloudflareManaged(nameservers: string[]): boolean {
+    if (!nameservers || nameservers.length === 0) return false;
+
+    return nameservers.some(ns => {
+        const lowerNs = ns.toLowerCase();
+        return CLOUDFLARE_NS_PATTERNS.some(pattern => lowerNs.includes(pattern));
+    });
+}
+
 export interface ZoneHoldResult {
-    zone_hold: 'yes' | 'no';
+    zone_hold: 'yes' | 'no' | 'likely';  // 'likely' for external domains with CF nameservers
     details?: string;
+    verification_method?: 'api' | 'nameserver_inference';
 }
 
 export async function checkZoneHold(hostname: string, apiToken: string, zoneId: string): Promise<ZoneHoldResult> {

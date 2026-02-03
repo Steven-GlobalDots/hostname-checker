@@ -26,7 +26,7 @@ body {
     justify-content: center;
     overflow-x: hidden;
     background-image: radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
-                      radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%);
 }
 
 .container {
@@ -105,8 +105,15 @@ p {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Input Section */
@@ -164,7 +171,8 @@ input[type="text"]:focus {
     transition: all 0.3s ease;
 }
 
-.file-upload-area:hover, .file-upload-area.dragover {
+.file-upload-area:hover,
+.file-upload-area.dragover {
     border-color: var(--primary-color);
     background: rgba(59, 130, 246, 0.1);
 }
@@ -227,7 +235,8 @@ table {
     margin-top: 1rem;
 }
 
-th, td {
+th,
+td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid var(--glass-border);
@@ -257,14 +266,31 @@ tr:hover td {
     font-weight: 500;
 }
 
-.badge.allowed, .badge.yes {
+.badge.allowed,
+.badge.yes {
     background: rgba(16, 185, 129, 0.2);
     color: #34d399;
 }
 
-.badge.not_allowed, .badge.no {
+.badge.not_allowed,
+.badge.no {
     background: rgba(239, 68, 68, 0.2);
     color: #f87171;
+}
+
+.badge.zone-hold-likely {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+.danger-btn {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #f87171 !important;
+}
+
+.danger-btn:hover {
+    background: rgba(239, 68, 68, 0.2) !important;
 }
 
 /* Loader */
@@ -282,7 +308,9 @@ tr:hover td {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .status-message {

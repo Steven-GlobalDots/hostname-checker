@@ -188,12 +188,17 @@ function renderBadge(value, goodVal) {
 
 function renderZoneHoldBadge(value) {
     if (!value) return '-';
-    // Logic: yes = red (bad), no = green (good)
-    // We'll rely on CSS classes, adding overrides
+    // Logic: 
+    // - 'yes' = red (confirmed zone hold via API)
+    // - 'likely' = yellow/orange (CF nameservers detected, likely on another account)
+    // - 'no' = green (not on Cloudflare or no hold detected)
     let className = 'badge';
-    if (value === 'yes') className += ' not_allowed'; // Reuse not_allowed (Red)
-    if (value === 'no') className += ' allowed';      // Reuse allowed (Green)
-    return `<span class="${className}">${value}</span>`;
+    if (value === 'yes') className += ' not_allowed'; // Red - confirmed hold
+    if (value === 'likely') className += ' zone-hold-likely'; // Yellow - likely hold
+    if (value === 'no') className += ' allowed';      // Green - no hold
+
+    const displayText = value === 'likely' ? 'Likely Hold' : value;
+    return `<span class="${className}">${displayText}</span>`;
 }
 
 function truncate(str, len = 30) {
