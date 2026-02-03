@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "hostname-checker",
+	"name": "ganesh-ssl4saas-hostname-checker",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-01-31",
 	"assets": {
