@@ -71,23 +71,23 @@ export async function checkZoneHold(hostname: string, apiToken: string, zoneId: 
             await deleteCustomHostname(id, apiToken, zoneId);
             return { zone_hold: 'no' };
         } else {
-            // Logic: If error code is 10000+ or specific "Hostname belongs to another account"
-            // Usually error 1406: "Hostname ... is not a valid hostname"
-            // Or something regarding ownership.
+            console.log(`[ZoneHold] Check failed for ${hostname}:`, JSON.stringify(data));
 
-            // Common error for zone hold: "The hostname is being used by another account"
             const errors = data.errors || [];
+            // Expand matching logic
             const isHeld = errors.some((e: any) =>
                 e.message.toLowerCase().includes('another account') ||
                 e.message.toLowerCase().includes('zone hold') ||
-                e.code === 1010 // Error code might vary, reliance on message is safer but still brittle
+                e.message.toLowerCase().includes('already exists') ||
+                e.message.toLowerCase().includes('is active') ||
+                e.code === 1010
             );
 
             if (isHeld) {
                 return { zone_hold: 'yes', details: errors[0]?.message };
             }
 
-            // Other errors (e.g. invalid hostname)
+            // If it failed but not because of hold (e.g. invalid domain), return no but with details
             return { zone_hold: 'no', details: errors[0]?.message || 'Unknown error' };
         }
     } catch (e) {
