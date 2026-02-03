@@ -1,7 +1,7 @@
 # Hostname Checker
 
 ## Overview
-The Hostname Checker is a full-stack Cloudflare Worker application designed to analyze domain properties. It performs DNS lookups (A, CNAME, NS, CAA), checks for Cloudflare proxy status, verifying SSL issuance eligibility (Google, SSL.com, Let's Encrypt), and detects if a hostname is subject to a "Zone Hold" within Cloudflare.
+The Hostname Checker is a full-stack Cloudflare Worker application designed to analyze domain properties. It performs DNS lookups (A, CNAME, NS, CAA), checks for Cloudflare proxy status, verifying SSL issuance eligibility (Google, SSL.com, Let's Encrypt)
 
 ## Architecture
 The application is built on **Cloudflare Workers** using the **Hono** framework.
@@ -24,7 +24,7 @@ npx wrangler deploy
 ```
 
 ## Live URL
-https://hostname-checker.globaldots.workers.dev
+https://hostname-check.super-cdn.com
 
 ## API Reference
 
