@@ -20,7 +20,7 @@
 			"database_name": "hosts_db",
 			"database_id": "2fb2fa6a-32a7-4a5f-bd4d-fafb99648611"
 		}
-	]
+	],
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
