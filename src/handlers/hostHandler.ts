@@ -198,8 +198,8 @@ export async function handleCheckHost(c: Context<{ Bindings: Bindings }>) {
 
         // 5. Store in D1
         await c.env.hosts_db.prepare(`
-            INSERT INTO hosts (hostname, authoritative_ns, is_proxied, dns_type, dns_result, ssl_google, ssl_ssl_com, ssl_lets_encrypt, zone_hold, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO hosts (hostname, authoritative_ns, is_proxied, dns_type, dns_result, ssl_google, ssl_ssl_com, ssl_lets_encrypt, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(hostname) DO UPDATE SET
                 authoritative_ns=excluded.authoritative_ns,
                 is_proxied=excluded.is_proxied,
@@ -208,7 +208,6 @@ export async function handleCheckHost(c: Context<{ Bindings: Bindings }>) {
                 ssl_google=excluded.ssl_google,
                 ssl_ssl_com=excluded.ssl_ssl_com,
                 ssl_lets_encrypt=excluded.ssl_lets_encrypt,
-                zone_hold=excluded.zone_hold,
                 updated_at=excluded.updated_at
         `).bind(
             hostname,
@@ -219,7 +218,6 @@ export async function handleCheckHost(c: Context<{ Bindings: Bindings }>) {
             sslGoogle,
             sslSslCom,
             sslLetsEncrypt,
-            zoneHoldRes.zone_hold,
             Date.now()
         ).run();
 
@@ -232,8 +230,6 @@ export async function handleCheckHost(c: Context<{ Bindings: Bindings }>) {
             ssl_google: sslGoogle,
             ssl_ssl_com: sslSslCom,
             ssl_lets_encrypt: sslLetsEncrypt,
-            zone_hold: zoneHoldRes.zone_hold,
-            zone_hold_details: zoneHoldRes.details,
             updated_at: Date.now()
         });
 

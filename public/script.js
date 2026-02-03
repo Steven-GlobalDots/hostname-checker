@@ -174,7 +174,6 @@ function renderTable(data) {
             <td>${renderBadge(row.ssl_google, 'allowed')}</td>
             <td>${renderBadge(row.ssl_ssl_com, 'allowed')}</td>
             <td>${renderBadge(row.ssl_lets_encrypt, 'allowed')}</td>
-            <td>${renderZoneHoldBadge(row.zone_hold)}</td>
         `;
         resultsTableBody.appendChild(tr);
     });
