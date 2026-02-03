@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare Hostname Checker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-glow"></div>
+    
+    <div class="container">
+        <header>
+            <h1>Hostname <span class="gradient-text">Checker</span></h1>
+            <p>Analyze DNS, SSL eligibility, and Cloudflare status instantly.</p>
+        </header>
+
+        <main>
+            <div class="input-section glass-panel">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="single">Single Host</button>
+                    <button class="tab-btn" data-tab="bulk">Bulk Upload</button>
+                </div>
+
+                <div class="tab-content active" id="single-tab">
+                    <div class="input-group">
+                        <input type="text" id="hostInput" placeholder="Enter hostname (e.g. example.com)" autocomplete="off">
+                        <button id="checkBtn" class="primary-btn">
+                            <span class="btn-text">Check Host</span>
+                            <div class="loader hidden"></div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="bulk-tab">
+                    <div class="file-upload-area" id="dropZone">
+                        <input type="file" id="fileInput" accept=".txt" hidden>
+                        <p>Drag & drop a .txt file here or <span class="highlight">browse</span></p>
+                        <small>One hostname per line</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section glass-panel">
+                <div class="results-header">
+                    <h2>Results</h2>
+                    <div class="actions">
+                        <button id="refreshBtn" class="icon-btn" title="Refresh Data">↻</button>
+                        <button id="downloadJsonBtn" class="secondary-btn">Download JSON</button>
+                        <button id="downloadCsvBtn" class="secondary-btn">Download CSV</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>Hostname</th>
+                                <th>Authoritative NS</th>
+                                <th>Proxied</th>
+                                <th>DNS Type</th>
+                                <th>DNS Result</th>
+                                <th>Google SSL</th>
+                                <th>SSL.com</th>
+                                <th>Let's Encrypt</th>
+                                <th>Zone Hold</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Rows will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="statusMessage" class="status-message"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
