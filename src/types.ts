@@ -1,5 +1,19 @@
+// import { Workflow } from '@cloudflare/workers-types'; // Removed as we use generated types
+
 export interface Bindings {
     hosts_db: D1Database;
+    CLOUDFLARE_API_TOKEN: string;
+    CLOUDFLARE_ZONE_ID: string;
+    HOST_CHECK_WORKFLOW: Workflow;
+}
+
+export interface Job {
+    id: string;
+    hostname: string;
+    status: 'pending' | 'running' | 'completed' | 'failed';
+    result?: string; // JSON string
+    created_at: number;
+    updated_at: number;
 }
 
 export interface ErrorResponse {
@@ -42,4 +56,7 @@ export enum RecordType {
     TXT = 'TXT'
 }
 
-
+export interface ZoneHoldResult {
+    zone_hold: 'yes' | 'no';
+    details?: string;
+}

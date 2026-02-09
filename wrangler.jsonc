@@ -21,6 +21,13 @@
 			"database_id": "2fb2fa6a-32a7-4a5f-bd4d-fafb99648611"
 		}
 	],
+	"workflows": [
+		{
+			"name": "host-check-workflow",
+			"binding": "HOST_CHECK_WORKFLOW",
+			"class_name": "HostCheckWorkflow"
+		}
+	],
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -38,7 +45,10 @@
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
 	 */
-	"vars": {}
+	"vars": {
+		"CLOUDFLARE_API_TOKEN": "q4kuO-4O4eAe3KEk4FP33BxkisPy8GmZNr17QM2Z",
+		"CLOUDFLARE_ZONE_ID": "37c9ca9f3da3f05991911eae2ca21f09"
+	}
 	/**
 	 * Service Bindings (communicate between multiple Workers)
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings

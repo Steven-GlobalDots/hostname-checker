@@ -47,27 +47,48 @@ fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
 loadResults();
 
 // Logic
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 async function handleSingleCheck() {
     const hostname = hostInput.value.trim();
     if (!hostname) return;
 
     setLoading(true);
-    setStatus('Checking ' + hostname + '...');
+    setStatus('Queueing ' + hostname + '...');
 
     try {
+        // 1. Submit Job
         const res = await fetch(`${API_URL}/check-host`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ hostname })
         });
 
-        if (!res.ok) throw new Error('Check failed');
+        if (!res.ok) throw new Error('Failed to submit job');
+        const { jobId } = await res.json();
 
-        const data = await res.json();
-        // Reload table to show updated status
-        await loadResults();
+        // 2. Poll for results
+        setStatus('Checking ' + hostname + '...');
+        let job;
+        while (true) {
+            const pollRes = await fetch(`${API_URL}/jobs/${jobId}`);
+            if (!pollRes.ok) throw new Error('Polling failed');
+            job = await pollRes.json();
+
+            if (job.status === 'completed' || job.status === 'failed') break;
+            await sleep(1000); // Wait 1s
+        }
+
+        if (job.status === 'failed') {
+            throw new Error(JSON.parse(job.result).error || 'Job failed');
+        }
+
         setStatus(`Checked ${hostname} successfully.`);
         hostInput.value = '';
+
+        // Refresh table
+        await loadResults();
+
     } catch (err) {
         setStatus(`Error: ${err.message}`);
     } finally {
@@ -103,13 +124,35 @@ function handleFile(file) {
 
         for (const host of hostnames) {
             try {
-                setStatus(`Checking ${host}... (${successCount + 1}/${hostnames.length})`);
-                await fetch(`${API_URL}/check-host`, {
+                setStatus(`Queueing ${host}... (${successCount + 1}/${hostnames.length})`);
+
+                // Submit Job
+                const res = await fetch(`${API_URL}/check-host`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ hostname: host })
                 });
-                successCount++;
+
+                if (res.ok) {
+                    const { jobId } = await res.json();
+                    // Optional: Poll here if we want sequential "Wait for result" behavior
+                    // Or just fire and forget if bulk?
+                    // The UI implies we want to see progress. 
+                    // Let's poll to be safe and consistent with "Checked X/Y hosts" message importance.
+
+                    let job;
+                    while (true) {
+                        const pollRes = await fetch(`${API_URL}/jobs/${jobId}`);
+                        if (!pollRes.ok) break;
+                        job = await pollRes.json();
+                        if (job.status === 'completed' || job.status === 'failed') break;
+                        await sleep(1000);
+                    }
+
+                    if (job && job.status === 'completed') {
+                        successCount++;
+                    }
+                }
             } catch (err) {
                 console.error(`Failed to check ${host}`, err);
             }

@@ -36,4 +36,91 @@ export function isCloudflareIp(ip: string): boolean {
     return CLOUDFLARE_IPV4.some(cidr => ipInCidr(ip, cidr));
 }
 
+// Cloudflare nameserver patterns
+const CLOUDFLARE_NS_PATTERNS = [
+    '.ns.cloudflare.com',
+    'cloudflare.com'
+];
 
+/**
+ * Check if nameservers indicate Cloudflare management
+ * This is used for external domains to infer potential zone hold
+ */
+export function isCloudflareManaged(nameservers: string[]): boolean {
+    if (!nameservers || nameservers.length === 0) return false;
+
+    return nameservers.some(ns => {
+        const lowerNs = ns.toLowerCase();
+        return CLOUDFLARE_NS_PATTERNS.some(pattern => lowerNs.includes(pattern));
+    });
+}
+
+export interface ZoneHoldResult {
+    zone_hold: 'yes' | 'no' | 'likely';  // 'likely' for external domains with CF nameservers
+    details?: string;
+    verification_method?: 'api' | 'nameserver_inference';
+}
+
+export async function checkZoneHold(hostname: string, apiToken: string, zoneId: string): Promise<ZoneHoldResult> {
+    if (!apiToken || !zoneId) {
+        console.warn('Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ZONE_ID');
+        return { zone_hold: 'no', details: 'Missing credentials' };
+    }
+
+    const url = `https://api.cloudflare.com/client/v4/zones/${zoneId}/custom_hostnames`;
+    const body = {
+        hostname: hostname,
+        ssl: { method: 'http', type: 'dv', settings: { http2: 'on' } }
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiToken}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data: any = await response.json();
+
+        if (response.ok && data.success) {
+            // Created successfully, so NO hold. Delete it immediately.
+            const id = data.result.id;
+            await deleteCustomHostname(id, apiToken, zoneId);
+            return { zone_hold: 'no' };
+        } else {
+            console.log(`[ZoneHold] Check failed for ${hostname}:`, JSON.stringify(data));
+
+            const errors = data.errors || [];
+            // Expand matching logic
+            const isHeld = errors.some((e: any) =>
+                e.message.toLowerCase().includes('another account') ||
+                e.message.toLowerCase().includes('zone hold') ||
+                e.message.toLowerCase().includes('already exists') ||
+                e.message.toLowerCase().includes('is active') ||
+                e.code === 1010
+            );
+
+            if (isHeld) {
+                return { zone_hold: 'yes', details: errors[0]?.message };
+            }
+
+            // If it failed but not because of hold (e.g. invalid domain), return no but with details
+            return { zone_hold: 'no', details: errors[0]?.message || 'Unknown error' };
+        }
+    } catch (e) {
+        console.error('Zone Hold Check Error:', e);
+        return { zone_hold: 'no', details: 'API Error' };
+    }
+}
+
+async function deleteCustomHostname(id: string, apiToken: string, zoneId: string) {
+    await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/custom_hostnames/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${apiToken}`
+        }
+    });
+}

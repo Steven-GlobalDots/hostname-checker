@@ -10,3 +10,12 @@ CREATE TABLE hosts (
     zone_hold TEXT CHECK(zone_hold IN ('yes', 'no')),
     updated_at INTEGER
 );
+
+CREATE TABLE jobs (
+    id TEXT PRIMARY KEY,
+    hostname TEXT NOT NULL,
+    status TEXT NOT NULL, -- pending, running, completed, failed
+    result TEXT,          -- JSON string of the result
+    created_at INTEGER,
+    updated_at INTEGER
+);
